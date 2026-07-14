@@ -1,0 +1,1 @@
+# 依存ライブラリをここに列挙（例: fastapi）。バージョンは pip install 後に pip freeze で固定する。
