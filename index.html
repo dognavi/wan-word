@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>わんワード</title>
+  <meta name="description" content="犬用語のカタカナ4文字を6回以内に当てる、1日1問のパズルゲーム。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <!-- og:image は未設定(実画像はこの環境では生成できないため)。
+       紹介LP用にOGP画像を用意した際、ここに <meta property="og:image" content="..."> を追加する。 -->
+  <meta property="og:title" content="わんワード">
+  <meta property="og:description" content="犬用語のカタカナ4文字を6回以内に当てる、1日1問のパズルゲーム。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="わんワード">
+  <meta name="twitter:description" content="犬用語のカタカナ4文字を6回以内に当てる、1日1問のパズルゲーム。">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1><span aria-hidden="true">🐾</span> わんワード</h1>
+    <p id="streak-inline" class="streak-inline">連続0日</p>
+    <div class="app-header-actions">
+      <button type="button" class="btn-secondary" id="open-howto-btn">遊び方</button>
+      <button type="button" class="btn-secondary" id="open-candidates-btn">候補46語</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="board-wrapper">
+      <div id="toast" class="toast" hidden></div>
+
+      <!-- 盤面本体は js/board.js の renderBoard() が動的に生成する -->
+      <div id="board" class="board"></div>
+    </div>
+  </main>
+
+  <section id="keyboard-section" class="keyboard-fixed" aria-label="キーボード">
+    <!-- キーボード本体は js/keyboard.js の renderKeyboard() が動的に生成する。
+         配置データ(GYOU_TABLE/COLUMN_ORDER)は keyboard.js だけが持ち、ここにはハードコードしない
+         (2箇所に定義があるとズレるため)。 -->
+    <div id="keyboard-grid" class="keyboard-grid"></div>
+    <div id="keyboard-aux" class="keyboard-aux"></div>
+  </section>
+
+  <dialog id="howto-dialog" class="app-dialog howto-dialog">
+    <h2>遊び方</h2>
+
+    <p>今日の隠された犬用語（カタカナ4文字）を、6回以内に当ててください。</p>
+
+    <h3>候補</h3>
+    <p>答えは「候補46語」ボタンに載っている単語のどれかです。候補を見ながら絞り込めます。</p>
+
+    <h3>入力方法</h3>
+    <p>画面下のキーボードで4文字入れて「決定」を押します。</p>
+
+    <h3>色の意味</h3>
+    <ul class="howto-color-list">
+      <li>
+        <div class="tile howto-tile tile-correct"><span class="tile-char">ア</span><span class="tile-badge" aria-hidden="true">○</span></div>
+        <span>その文字が<strong>その位置にある</strong></span>
+      </li>
+      <li>
+        <div class="tile howto-tile tile-present"><span class="tile-char">エ</span><span class="tile-badge" aria-hidden="true">△</span></div>
+        <span>答えに<strong>含まれるが位置が違う</strong></span>
+      </li>
+      <li>
+        <div class="tile howto-tile tile-absent"><span class="tile-char">ワ</span><span class="tile-badge" aria-hidden="true">✕</span></div>
+        <span>答えに<strong>含まれない</strong></span>
+      </li>
+    </ul>
+
+    <h3>具体例（説明用。実際の候補にはない例です）</h3>
+    <p class="howto-example-caption">答えが「アイウエ」だったとして、「アエオワ」と入力すると:</p>
+    <div class="howto-example-row" aria-hidden="true">
+      <div class="tile howto-tile">ア</div><div class="tile howto-tile">エ</div><div class="tile howto-tile">オ</div><div class="tile howto-tile">ワ</div>
+    </div>
+    <div class="howto-example-row">
+      <div class="tile howto-tile tile-correct"><span class="tile-char">ア</span><span class="tile-badge" aria-hidden="true">○</span></div>
+      <div class="tile howto-tile tile-present"><span class="tile-char">エ</span><span class="tile-badge" aria-hidden="true">△</span></div>
+      <div class="tile howto-tile tile-absent"><span class="tile-char">オ</span><span class="tile-badge" aria-hidden="true">✕</span></div>
+      <div class="tile howto-tile tile-absent"><span class="tile-char">ワ</span><span class="tile-badge" aria-hidden="true">✕</span></div>
+    </div>
+    <p class="howto-example-explain">1文字目の「ア」は位置も一致なので緑。2文字目の「エ」は答えに含まれるが位置が違うので黄。3・4文字目の「オ」「ワ」は答えに含まれないのでグレーになります。</p>
+
+    <h3>濁点・半濁点キー</h3>
+    <p>「゛」を押すと、直前に入力した文字に濁点が付きます（例: ハ→バ）。「゜」を押すと半濁点が付きます（例: ハ→パ）。もう一度押すと清音に戻ります。</p>
+
+    <h3>1日1問</h3>
+    <p>1日1問、日本時間の午前0時に新しい問題に切り替わります。</p>
+
+    <button type="button" class="btn-primary" id="close-howto-btn">閉じる</button>
+  </dialog>
+
+  <dialog id="result-dialog" class="app-dialog result-dialog">
+    <p id="result-heading" class="result-heading"></p>
+    <p id="result-detail" class="result-detail"></p>
+    <p id="result-next" class="result-next"></p>
+    <div class="result-actions">
+      <button type="button" class="btn-secondary" id="share-result-btn">結果をコピー</button>
+      <button type="button" class="btn-primary" id="close-result-btn">閉じる</button>
+    </div>
+    <p id="share-feedback" class="share-feedback" role="status" hidden></p>
+    <textarea id="share-text-fallback" class="share-text-fallback" readonly hidden></textarea>
+  </dialog>
+
+  <dialog id="candidates-dialog" class="app-dialog">
+    <h2>候補46語</h2>
+    <p>今日の答えはこの中のどれかです。</p>
+    <ul id="candidates-list" class="candidates-list"></ul>
+    <button type="button" class="btn-primary" id="close-candidates-btn">閉じる</button>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

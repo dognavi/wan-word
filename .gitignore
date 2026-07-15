@@ -1,40 +1,10 @@
-# ===== Python =====
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-*.egg
-.eggs/
-build/
-dist/
-*.so
-
-# ===== 仮想環境 =====
-.venv/
-venv/
-env/
-ENV/
-
-# ===== テスト / Lint / 型チェックのキャッシュ =====
-.pytest_cache/
-.ruff_cache/
-.mypy_cache/
-.dmypy.json
-.hypothesis/
-.coverage
-.coverage.*
-coverage.xml
-htmlcov/
-.tox/
-
-# ===== Jupyter =====
-.ipynb_checkpoints/
+# ===== Node =====
+node_modules/
+coverage/
 
 # ===== 環境変数・機密（git追跡を必ず止める＝必須）=====
 .env
 .env.*
-# 共有用テンプレだけは追跡する（!行にインラインコメントを付けると無効化されるため、コメントは必ず別行に書く）
-!.env.example
 
 # ===== ログ・一時ファイル =====
 *.log

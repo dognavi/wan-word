@@ -1,0 +1,477 @@
+:root {
+  --color-bg: #fdf8f2;
+  --color-text: #3a3128;
+  --color-card-bg: #ffffff;
+  --color-border: #ecdfd0;
+  --color-accent: #3d8f63;
+  --color-accent-soft: #eaf6ef;
+  --spacing-unit: 1rem;
+  --radius: 16px;
+
+  --tile-correct-bg: #2f8f5b;
+  --tile-correct-fg: #ffffff;
+  --tile-present-bg: #f2b705;
+  --tile-present-fg: #3a3128;
+  --tile-absent-bg: #b8b0a6;
+  --tile-absent-fg: #ffffff;
+
+  --key-min-width: 28px;
+  --key-min-height: 36px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  /* ページ自体は絶対にスクロールさせない。スクロールは .app-main の内部だけに限定する。
+     これが無いと、子要素が入りきらない場合にブラウザは body ごとスクロールさせてしまい、
+     ヘッダーやキーボードが画面外に流れてしまう（Phase1で実際に踏んだ不具合）。 */
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+/* ===== ヘッダー（常時表示要素その1） ===== */
+.app-header {
+  flex: 0 0 auto;
+  padding: 0.5rem var(--spacing-unit);
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.streak-inline {
+  margin: 0.15rem 0;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.app-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.3rem;
+}
+
+.app-header-actions .btn-secondary {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+/* ===== 盤面（常時表示要素その2）。ここだけがスクロールする ===== */
+.app-main {
+  flex: 1 1 auto;
+  /* flexアイテムの min-height の初期値は auto（＝中身より縮まない）。
+     これを 0 にしないと、中身が多いときに .app-main がこの要素自身の
+     コンテナからはみ出し、結果としてページ全体がスクロールしてしまう。 */
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.board-wrapper {
+  position: relative;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(32px, 44px));
+  grid-template-rows: repeat(6, minmax(32px, 44px));
+  gap: 4px;
+}
+
+.tile {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-card-bg);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tile-char {
+  pointer-events: none;
+}
+
+.tile-badge {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.tile-correct {
+  background-color: var(--tile-correct-bg);
+  color: var(--tile-correct-fg);
+  border-color: var(--tile-correct-bg);
+}
+
+.tile-present {
+  background-color: var(--tile-present-bg);
+  color: var(--tile-present-fg);
+  border-color: var(--tile-present-bg);
+}
+
+.tile-absent {
+  background-color: var(--tile-absent-bg);
+  color: var(--tile-absent-fg);
+  border-color: var(--tile-absent-bg);
+}
+
+/* 正解した行のタイルに、左から順に少し遅れてポップさせる演出(main.jsが個別にanimation-delayを設定する)。
+   拡大縮小に加え、わずかに浮き上がる動きとアクセントカラーの淡い光を一瞬添えることで
+   達成感を出しつつ、回転や色フラッシュのような派手な演出は避ける。 */
+@keyframes tile-reveal {
+  0% {
+    transform: scale(1) translateY(0);
+    box-shadow: none;
+  }
+  45% {
+    transform: scale(1.3) translateY(-6px);
+    box-shadow: 0 8px 16px rgba(61, 143, 99, 0.35), 0 0 0 4px var(--color-accent-soft);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    box-shadow: none;
+  }
+}
+
+.tile-reveal {
+  animation: tile-reveal 0.5s ease-out;
+}
+
+.toast {
+  position: absolute;
+  top: -0.25rem;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+  text-align: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background-color: var(--color-accent-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ===== キーボード（常時表示要素その3）。画面下部に固定 ===== */
+.keyboard-fixed {
+  flex: 0 0 auto;
+  background-color: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  padding: 0.5rem;
+}
+
+.keyboard-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(var(--key-min-width), 1fr));
+  grid-auto-rows: var(--key-min-height);
+  gap: 2px;
+}
+
+.keyboard-aux {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.keyboard-aux .key {
+  flex: 1 1 0;
+}
+
+.key {
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  min-height: var(--key-min-height);
+  padding: 0;
+  cursor: pointer;
+}
+
+/* 言語として存在しない位置(ヤ行イ/エ段、ワ行イ/ウ/エ段など)。文字を持たず、常に空欄。
+   文字だけを消し枠線は薄く残す。枠線ごと消すと、段によって空欄位置が変わるキー配置で
+   列の境界が視覚的に追えなくなり、正しい配置でも文字がずれて見える誤読を招くため。 */
+.key-empty {
+  color: transparent;
+  border-color: var(--color-border);
+  background-color: var(--color-bg);
+}
+
+/* 46語のどの単語にも(濁点サイクル込みで)使われない文字。押しても意味がないため
+   button自体をdisabledにする。「入力済みで答えに含まれない(グレー)」とは
+   意味が異なるため、同じ色を使わず、破線の枠と薄い文字色で区別する。
+   色だけに依存しないよう aria-disabled と aria-label も併用する(main.jsで付与)。 */
+.key-unused {
+  border-style: dashed;
+  color: #b0a89a;
+  background-color: var(--color-bg);
+}
+
+.key-unused:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.key-correct {
+  background-color: var(--tile-correct-bg);
+  color: var(--tile-correct-fg);
+  border-color: var(--tile-correct-bg);
+}
+
+.key-present {
+  background-color: var(--tile-present-bg);
+  color: var(--tile-present-fg);
+  border-color: var(--tile-present-bg);
+}
+
+.key-absent {
+  background-color: var(--tile-absent-bg);
+  color: var(--tile-absent-fg);
+  border-color: var(--tile-absent-bg);
+}
+
+/* 決定キー: 4文字揃うまでは「今は押せない」と見た目で分かるよう薄く表示し、
+   揃った瞬間に btn-primary 相当の目立つ色に変わる(disabled解除の合図をはっきり出す)。
+   disabledのまま何も変わらないと、押しても反応しないことが「壊れている」ように
+   見えてしまうため、押せる状態への変化を視覚的にも明示する。 */
+#enter-key {
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+#enter-key:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#enter-key:not(:disabled) {
+  background-color: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+/* ゲーム終了後(勝敗確定後)はキーボード全体の入力を受け付けない見た目にする。 */
+.keyboard-grid.is-game-over,
+.keyboard-aux.is-game-over {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ===== ダイアログ（遊び方・候補46語） ===== */
+.app-dialog {
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--spacing-unit);
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: var(--color-card-bg);
+  color: var(--color-text);
+}
+
+.app-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.app-dialog h2 {
+  margin: 0 0 0.5rem;
+  color: var(--color-accent);
+}
+
+.app-dialog h3 {
+  margin: 1rem 0 0.3rem;
+  font-size: 0.95rem;
+  color: var(--color-accent);
+}
+
+.app-dialog p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+/* ===== 遊び方: 色見本・具体例 ===== */
+.howto-tile {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  flex: none;
+}
+
+.howto-color-list {
+  list-style: none;
+  margin: 0.3rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.howto-color-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.howto-example-caption,
+.howto-example-explain {
+  font-size: 0.85rem;
+  color: #6b6055;
+}
+
+.howto-example-row {
+  display: flex;
+  gap: 4px;
+  margin: 0.3rem 0;
+}
+
+/* ===== 結果ダイアログ（勝敗） ===== */
+.result-heading {
+  margin: 0 0 0.4rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.result-heading--win {
+  color: var(--color-accent);
+}
+
+.result-heading--lose {
+  color: var(--color-text);
+}
+
+.result-detail {
+  text-align: center;
+  font-size: 0.95rem;
+  margin: 0 0 0.3rem;
+  color: #6b6055;
+}
+
+.result-next {
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+  color: #8a7d6f;
+}
+
+.result-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.result-actions .btn-secondary,
+.result-actions .btn-primary {
+  flex: 1;
+}
+
+.share-feedback {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  margin: 0.5rem 0 0;
+}
+
+/* clipboard APIが使えない環境向けの最終フォールバック。長押し選択でコピーできるよう
+   readonlyのまま表示し、非表示時は場所を取らない。 */
+.share-text-fallback {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0.5rem 0 0;
+  padding: 0.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  resize: none;
+}
+
+.share-text-fallback[hidden] {
+  display: none;
+}
+
+.btn-primary,
+.btn-secondary {
+  font: inherit;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: #fff;
+  border: none;
+}
+
+.btn-secondary {
+  background-color: #fff;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+}
+
+.candidates-list {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.4rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
