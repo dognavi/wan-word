@@ -43,11 +43,20 @@ body {
   background-color: var(--color-bg);
   background-image: url("../img/bg-dogs.jpg");
   background-size: cover;
-  background-position: center;
+  /* スマホ縦: 上側の犬を画面に収め、下段(キーボードで隠れる部分)への切れを減らす。 */
+  background-position: center top;
   background-repeat: no-repeat;
-  background-attachment: fixed;
   color: var(--color-text);
   line-height: 1.4;
+}
+
+/* PC横などの広い画面では cover だと縦長画像が拡大されすぎて上下が切れるため、
+   画像全体が収まる contain に切り替える。左右の余白は background-color のクリームで埋まる。 */
+@media (min-width: 768px) {
+  body {
+    background-size: contain;
+    background-position: center;
+  }
 }
 
 /* ===== ヘッダー（常時表示要素その1） ===== */
