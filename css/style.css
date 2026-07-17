@@ -50,11 +50,13 @@ body {
   line-height: 1.4;
 }
 
-/* PC横などの広い画面では cover だと縦長画像が拡大されすぎて上下が切れるため、
-   画像全体が収まる contain に切り替える。左右の余白は background-color のクリームで埋まる。 */
+/* PC横などの広い画面では、縦長画像(bg-dogs.jpg)だと contain でも左右の余白が
+   目立つため、横長画像(bg-dogs-wide.jpg)に差し替える。左右の縁に犬・中央がクリームの
+   横長画像なので cover でぴったり収まり、中央のクリームに盤面が入る構図になる。 */
 @media (min-width: 768px) {
   body {
-    background-size: contain;
+    background-image: url("../img/bg-dogs-wide.jpg");
+    background-size: cover;
     background-position: center;
   }
 }
