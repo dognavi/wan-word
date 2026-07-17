@@ -39,15 +39,30 @@ body {
   height: 100vh;
   height: 100dvh;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  /* 画像読み込み前・失敗時の保険として background-color は残す(画像はその上に重なる)。 */
   background-color: var(--color-bg);
+  background-image: url("../img/bg-dogs.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--color-text);
   line-height: 1.4;
 }
 
 /* ===== ヘッダー（常時表示要素その1） ===== */
+/* 背景画像(犬のイラスト)の上に文字が直接乗るため、実測でコントラスト比が
+   WCAG AA基準(4.5:1)を下回る箇所があった。ヘッダーの背後にだけ淡いクリームの
+   半透明グラデーションを敷いて可読性を確保する(画像自体は透けて見える程度に留める)。 */
 .app-header {
   flex: 0 0 auto;
   padding: 0.5rem var(--spacing-unit);
+  background: linear-gradient(
+    to bottom,
+    rgba(253, 248, 242, 0.88) 0%,
+    rgba(253, 248, 242, 0.7) 60%,
+    rgba(253, 248, 242, 0.4) 100%
+  );
   text-align: center;
 }
 

@@ -22,6 +22,7 @@
 - `js/candidates.js`: 候補46語の一覧表示UI
 - `js/storage.js`: localStorage（当日の結果・streak）の読み書き
 - `js/sanitize.js`: 安全なDOM生成ヘルパー
+- `img/`: 背景画像などの画像アセット
 - `test/*.test.js`: `node --test` で実行するテスト一式
 
 ## ゲームルール（確定仕様。逸脱不可）
