@@ -17,3 +17,13 @@ export function buildShareText({ history, didWin, maxRows, dateLabel }) {
   }
   return lines.join("\n");
 }
+
+const TWITTER_INTENT_BASE_URL = "https://twitter.com/intent/tweet";
+
+// X(Twitter)公式のWeb Intent形式のURLを組み立てる。DOM/windowに一切触れない
+// 純粋関数とし、実際に開く処理(window.open)は呼び出し側(main.js)に任せる。
+// shareTextはbuildShareTextの出力をそのまま渡す前提(答えの文字を含まない保証を継承する)。
+export function buildTweetIntentUrl({ shareText, hashtag, url }) {
+  const text = `${shareText}\n${hashtag}\n${url}`;
+  return `${TWITTER_INTENT_BASE_URL}?text=${encodeURIComponent(text)}`;
+}

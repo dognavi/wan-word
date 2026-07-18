@@ -4,7 +4,7 @@ import { judge, GREEN } from "./judge.js";
 import { ROW_COUNT, WORD_LENGTH, computeKeyStates, renderBoard, applyKeyStates } from "./board.js";
 import { getJstEpochDayNumber, getWordIndexForDate, getJstYearMonthDay } from "./day.js";
 import { renderCandidatesList } from "./candidates.js";
-import { buildShareText } from "./share.js";
+import { buildShareText, buildTweetIntentUrl } from "./share.js";
 import {
   loadRawState,
   saveRawState,
@@ -172,13 +172,20 @@ async function tryClipboardWrite(text) {
   }
 }
 
-document.getElementById("share-result-btn").addEventListener("click", async () => {
-  const text = buildShareText({
+const SITE_URL = "https://dognavi.github.io/wan-word/";
+const SHARE_HASHTAG = "#わんワード";
+
+function buildCurrentShareText() {
+  return buildShareText({
     history,
     didWin: gameStatus === "won",
     maxRows: ROW_COUNT,
     dateLabel: DATE_LABEL,
   });
+}
+
+document.getElementById("share-result-btn").addEventListener("click", async () => {
+  const text = buildCurrentShareText();
 
   shareTextFallbackEl.hidden = true;
 
@@ -197,6 +204,17 @@ document.getElementById("share-result-btn").addEventListener("click", async () =
   setText(shareFeedbackEl, "自動コピーができないため、下のテキストを選択してコピーしてください");
   shareFeedbackEl.hidden = false;
   showShareFallbackText(text);
+});
+
+// X(Twitter)公式のWeb Intentを新規タブで開く。ページ自体はそのまま維持する
+// (noopener,noreferrerで新規タブ側からwindow.openerを経由した操作を防ぐ)。
+document.getElementById("post-x-btn").addEventListener("click", () => {
+  const tweetUrl = buildTweetIntentUrl({
+    shareText: buildCurrentShareText(),
+    hashtag: SHARE_HASHTAG,
+    url: SITE_URL,
+  });
+  window.open(tweetUrl, "_blank", "noopener,noreferrer");
 });
 
 function handleCharKey(char) {
