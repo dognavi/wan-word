@@ -28,7 +28,7 @@ const todayDayNumber = getJstEpochDayNumber(now);
 const TODAY_ANSWER = WORDS[getWordIndexForDate(now)];
 // シェア文言の日付表示も、出題と同じ day.js の関数から求める(表示専用。ゲームロジックには使わない)。
 const { month: todayMonth, day: todayDay } = getJstYearMonthDay(now);
-const DATE_LABEL = `${todayMonth}/${todayDay}`;
+const DATE_LABEL = `${todayMonth}月${todayDay}日`;
 
 const howtoDialog = document.getElementById("howto-dialog");
 const candidatesDialog = document.getElementById("candidates-dialog");

@@ -10,8 +10,10 @@ import { GREEN, YELLOW, GRAY } from "./judge.js";
 const RESULT_EMOJI = { [GREEN]: "🟩", [YELLOW]: "🟨", [GRAY]: "⬜" };
 
 export function buildShareText({ history, didWin, maxRows, dateLabel }) {
-  const attemptsLabel = didWin ? String(history.length) : "X";
-  const lines = [`わんワード ${dateLabel} ${attemptsLabel}/${maxRows}`];
+  const resultLine = didWin
+    ? `${maxRows}回中${history.length}回目で成功！`
+    : `${maxRows}回で正解できず…`;
+  const lines = [`わんワード ${dateLabel}`, resultLine];
   for (const entry of history) {
     lines.push(entry.result.map((state) => RESULT_EMOJI[state]).join(""));
   }
