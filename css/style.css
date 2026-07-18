@@ -112,6 +112,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* 盤面を上下中央寄せにする。指定が無いと初期値の flex-start で常に上詰めになり、
+     余った縦スペースが盤面の下側だけに偏って溜まってしまうため。 */
+  justify-content: center;
   padding: 0.5rem;
 }
 
@@ -170,6 +173,23 @@ body {
   background-color: var(--tile-absent-bg);
   color: var(--tile-absent-fg);
   border-color: var(--tile-absent-bg);
+}
+
+/* PC横などの広い画面ではマス目を大きくし、盤面左右の余白(=犬のイラストとの間の
+   間延びしたクリーム余白)を縮める。犬が盤面を囲む構図自体は維持する範囲に留める。 */
+@media (min-width: 768px) {
+  .board {
+    grid-template-columns: repeat(4, minmax(56px, 72px));
+    grid-template-rows: repeat(6, minmax(56px, 72px));
+  }
+
+  .tile {
+    font-size: 2rem;
+  }
+
+  .tile-badge {
+    font-size: 0.75rem;
+  }
 }
 
 /* 正解した行のタイルに、左から順に少し遅れてポップさせる演出(main.jsが個別にanimation-delayを設定する)。
